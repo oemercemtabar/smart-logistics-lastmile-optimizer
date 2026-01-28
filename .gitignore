@@ -1,0 +1,14 @@
+# Java/Gradle
+.gradle/
+build/
+out/
+
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+
+# Env
+.env
