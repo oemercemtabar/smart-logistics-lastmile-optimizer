@@ -1,36 +1,34 @@
 package com.smartlogistics.slo.api;
 
-import com.smartlogistics.slo.domain.driver.DriverEntity;
-import com.smartlogistics.slo.domain.driver.DriverRepository;
-import java.util.UUID;
+import com.smartlogistics.slo.api.dto.driver.CreateDriverRequest;
+import com.smartlogistics.slo.api.dto.driver.DriverResponse;
+import com.smartlogistics.slo.service.driver.DriverService;
+import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
-
-
-
 
 @RestController
 @RequestMapping("/api/v1/drivers")
 public class DriverController {
-    
-    private final DriverRepository repo;
-    public DriverController(DriverRepository repo){
-        this.repo = repo;
-    }
+  private final DriverService service;
 
-    @GetMapping
-    public List<DriverEntity> list() { return repo.findAll();}
+  public DriverController(DriverService service) {
+    this.service = service;
+  }
 
-    @PostMapping
-    public DriverEntity create(@RequestBody DriverEntity body) {
-        return repo.save(body);
-    }
+  @GetMapping
+  public List<DriverResponse> list() {
+    return service.list();
+  }
 
-    @GetMapping("/{id}")
-    public DriverEntity get(@PathVariable UUID id ) {
-        return repo.findById(id).orElseThrow();
-    }
-    
-    
-    
+  @PostMapping
+  public DriverResponse create(@Valid @RequestBody CreateDriverRequest body) {
+    return service.create(body);
+  }
+
+  @GetMapping("/{id}")
+  public DriverResponse get(@PathVariable UUID id) {
+    return service.get(id);
+  }
 }

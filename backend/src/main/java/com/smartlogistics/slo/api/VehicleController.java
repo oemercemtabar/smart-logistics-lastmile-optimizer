@@ -1,36 +1,34 @@
 package com.smartlogistics.slo.api;
 
-import com.smartlogistics.slo.domain.vehicle.VehicleEntity;
-import com.smartlogistics.slo.domain.vehicle.VehicleRepository;
-import java.util.UUID;
+import com.smartlogistics.slo.api.dto.vehicle.CreateVehicleRequest;
+import com.smartlogistics.slo.api.dto.vehicle.VehicleResponse;
+import com.smartlogistics.slo.service.vehicle.VehicleService;
+import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-
 
 @RestController
 @RequestMapping("/api/v1/vehicles")
 public class VehicleController {
-    private final VehicleRepository repo;
-    public VehicleController(VehicleRepository repo) { this.repo = repo;}
+  private final VehicleService service;
 
-    @GetMapping
-    public List<VehicleEntity> list() {
-        return repo.findAll();
-    }
-    
-    @PostMapping
-    public VehicleEntity create(@RequestBody VehicleEntity body) {
-        return repo.save(body);
-    }
+  public VehicleController(VehicleService service) {
+    this.service = service;
+  }
 
-    @GetMapping("/{id}")
-    public VehicleEntity get(@PathVariable UUID id) {
-        return repo.findById(id).orElseThrow();
-    }
-    
+  @GetMapping
+  public List<VehicleResponse> list() {
+    return service.list();
+  }
+
+  @PostMapping
+  public VehicleResponse create(@Valid @RequestBody CreateVehicleRequest body) {
+    return service.create(body);
+  }
+
+  @GetMapping("/{id}")
+  public VehicleResponse get(@PathVariable UUID id) {
+    return service.get(id);
+  }
 }
