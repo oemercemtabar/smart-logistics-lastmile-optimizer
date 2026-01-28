@@ -5,9 +5,13 @@ import java.util.UUID;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "vehicles")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class VehicleEntity {
 
     @Id
@@ -19,6 +23,9 @@ public class VehicleEntity {
 
     @Column(name = "capacity_parcels", nullable = false)
     private int capacityParcels;
+
+    @Column(name = "capacity_kg", nullable = false)
+    private int capacityKg;
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true;

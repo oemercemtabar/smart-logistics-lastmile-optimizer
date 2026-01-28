@@ -7,9 +7,13 @@ import java.util.UUID;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "drivers")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class DriverEntity {
     
     @Id

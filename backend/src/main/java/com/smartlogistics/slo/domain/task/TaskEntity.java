@@ -6,9 +6,13 @@ import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder.In;
 import lombok.*;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "delivery_tasks")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class TaskEntity {
 
     @Id
