@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: slo_postgres
+    environment:
+      POSTGRES_DB: slo
+      POSTGRES_USER: slo
+      POSTGRES_PASSWORD: slo
+    ports:
+      - "15432:5432"
+    volumes:
+      - slo_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U slo -d slo"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7
+    container_name: slo_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  slo_pgdata:

@@ -33,7 +33,7 @@ services:
       POSTGRES_USER: slo
       POSTGRES_PASSWORD: slo
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
       - slo_pgdata:/var/lib/postgresql/data
     healthcheck:
