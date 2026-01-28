@@ -1,0 +1,2 @@
+ALTER TABLE drivers
+  ALTER COLUMN email SET NOT NULL;

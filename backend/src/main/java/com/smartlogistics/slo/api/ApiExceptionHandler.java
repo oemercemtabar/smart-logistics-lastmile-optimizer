@@ -1,53 +1,63 @@
 package com.smartlogistics.slo.api;
 
-import com.smartlogistics.slo.service.driver.DriverAlreadyExistsException;
-import com.smartlogistics.slo.service.driver.DriverNotFoundException;
-import com.smartlogistics.slo.service.vehicle.VehicleAlreadyExistsException;
-import com.smartlogistics.slo.service.vehicle.VehicleNotFoundException;
-import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;
+import java.util.stream.Collectors;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.smartlogistics.slo.service.exception.ConflictException;
+import com.smartlogistics.slo.service.exception.NotFoundException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-  @ExceptionHandler({VehicleNotFoundException.class, DriverNotFoundException.class})
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ProblemDetail notFound(RuntimeException ex) {
-    var pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-    pd.setProperty("timestamp", Instant.now());
-    return pd;
+  record ApiError(
+      Instant timestamp,
+      int status,
+      String error,
+      String code,
+      String message,
+      String path
+  ) {}
+
+  @ExceptionHandler(ConflictException.class)
+  public ResponseEntity<ApiError> handleConflict(ConflictException ex, HttpServletRequest req) {
+    return build(HttpStatus.CONFLICT, ex.getCode(), ex.getMessage(), req.getRequestURI());
   }
 
-  @ExceptionHandler({VehicleAlreadyExistsException.class, DriverAlreadyExistsException.class})
-  @ResponseStatus(HttpStatus.CONFLICT)
-  public ProblemDetail conflict(RuntimeException ex) {
-    var pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-    pd.setProperty("timestamp", Instant.now());
-    return pd;
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<ApiError> handleNotFound(NotFoundException ex, HttpServletRequest req) {
+    return build(HttpStatus.NOT_FOUND, ex.getCode(), ex.getMessage(), req.getRequestURI());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ProblemDetail validation(MethodArgumentNotValidException ex) {
-    var pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
-    pd.setProperty("timestamp", Instant.now());
-    pd.setProperty("errors",
-        ex.getBindingResult().getFieldErrors().stream()
-            .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
-            .toList()
-    );
-    return pd;
+  public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
+    String msg = ex.getBindingResult().getFieldErrors().stream()
+        .map(this::formatFieldError)
+        .collect(Collectors.joining("; "));
+    return build(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", msg, req.getRequestURI());
   }
 
-  @ExceptionHandler(ConstraintViolationException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ProblemDetail constraintViolation(ConstraintViolationException ex) {
-    var pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
-    pd.setProperty("timestamp", Instant.now());
-    return pd;
+  private String formatFieldError(FieldError fe) {
+    return fe.getField() + ": " + (fe.getDefaultMessage() == null ? "invalid" : fe.getDefaultMessage());
+  }
+
+  private ResponseEntity<ApiError> build(HttpStatus status, String code, String message, String path) {
+    ApiError body = new ApiError(
+        Instant.now(),
+        status.value(),
+        status.getReasonPhrase(),
+        code,
+        message,
+        path
+    );
+    return ResponseEntity.status(status).body(body);
   }
 }
